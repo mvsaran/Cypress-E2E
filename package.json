@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/mvsaran/Cypress-E2E#readme",
   "devDependencies": {
-    "cypress": "^14.5.1"
+    "cypress": "^14.5.1",
+    "cypress-mochawesome-reporter": "^3.8.2"
   }
 }
