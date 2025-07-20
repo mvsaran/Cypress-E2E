@@ -2,46 +2,52 @@ pipeline {
   agent any
 
   tools {
-    nodejs 'NodeJS_20'  // adjust for your Node tool name in Jenkins
+    nodejs 'NodeJS_20' // Use the exact name configured in Jenkins: Manage Jenkins > Global Tool Configuration
   }
 
   stages {
     stage('Install Dependencies') {
       steps {
-        bat 'npm ci'
+        echo '📦 Installing dependencies...'
+        bat 'npm install'
       }
     }
 
     stage('Run Cypress Tests') {
       steps {
+        echo '🚀 Running Cypress tests...'
         bat 'npx cypress run'
       }
     }
 
     stage('Verify JSON Reports') {
       steps {
-        echo '🔍 Checking JSON output...'
+        echo '🔍 Verifying that JSON reports exist...'
         bat 'dir cypress\\reports\\mochawesome\\json'
       }
     }
 
     stage('Merge Mochawesome JSON Reports') {
       steps {
-        echo '🔗 Merging JSON reports...'
-        bat 'npx mochawesome-merge cypress\\reports\\mochawesome\\json\\*.json > cypress\\reports\\mochawesome\\mochawesome.json'
+        echo '🔗 Merging JSON reports into mochawesome.json...'
+        bat '''
+          if not exist cypress\\reports\\mochawesome mkdir cypress\\reports\\mochawesome
+          npx mochawesome-merge cypress\\reports\\mochawesome\\json\\*.json > cypress\\reports\\mochawesome\\mochawesome.json
+        '''
       }
     }
 
     stage('Generate HTML Report') {
       steps {
-        echo '📊 Generating final HTML report...'
-        bat 'npx marge cypress\\reports\\mochawesome\\mochawesome.json --reportDir cypress\\reports\\mochawesome\\html --reportFilename index.html'
+        echo '📝 Generating final HTML report...'
+        bat 'npx marge cypress\\reports\\mochawesome\\mochawesome.json --reportDir cypress\\reports\\mochawesome --reportFilename index.html'
       }
     }
 
     stage('Archive HTML Report') {
       steps {
-        archiveArtifacts artifacts: 'cypress/reports/mochawesome/html/**', fingerprint: true
+        echo '📁 Archiving final HTML report...'
+        archiveArtifacts artifacts: 'cypress/reports/mochawesome/index.html', allowEmptyArchive: false
       }
     }
   }
