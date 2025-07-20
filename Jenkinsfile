@@ -3,7 +3,7 @@ pipeline {
 
   tools {
     nodejs 'NodeJS_20'
-    allure 'Allure'  // <- This must match your Jenkins Allure Commandline tool name!
+    allure 'allure'  // <- This must match your Jenkins Allure Commandline tool name!
   }
 
   stages {
