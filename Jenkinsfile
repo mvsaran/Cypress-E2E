@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   tools {
-    nodejs 'NodeJS_20' // Use the exact name configured in Jenkins: Manage Jenkins > Global Tool Configuration
+    nodejs 'NodeJS_20'
   }
 
   stages {
@@ -27,9 +27,9 @@ pipeline {
       }
     }
 
-    stage('Merge Mochawesome JSON Reports') {
+    stage('Merge JSON Reports') {
       steps {
-        echo '🔗 Merging JSON reports into mochawesome.json...'
+        echo '🔗 Merging JSON reports...'
         bat '''
           if not exist cypress\\reports\\mochawesome mkdir cypress\\reports\\mochawesome
           npx mochawesome-merge cypress\\reports\\mochawesome\\json\\*.json > cypress\\reports\\mochawesome\\mochawesome.json
@@ -37,16 +37,16 @@ pipeline {
       }
     }
 
-    stage('Generate HTML Report') {
+    stage('Generate Final HTML Report') {
       steps {
-        echo '📝 Generating final HTML report...'
+        echo '📝 Generating HTML report...'
         bat 'npx marge cypress\\reports\\mochawesome\\mochawesome.json --reportDir cypress\\reports\\mochawesome --reportFilename index.html'
       }
     }
 
     stage('Archive HTML Report') {
       steps {
-        echo '📁 Archiving final HTML report...'
+        echo '📁 Archiving HTML report...'
         archiveArtifacts artifacts: 'cypress/reports/mochawesome/index.html', allowEmptyArchive: false
       }
     }
