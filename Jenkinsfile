@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node'      // ✅ Match your Jenkins NodeJS tool name exactly
+        nodejs 'NodeJS_20'      // ✅ Match your Jenkins NodeJS tool name exactly
         allure 'allure'    // ✅ Match your Jenkins Allure Commandline tool name exactly
     }
 
