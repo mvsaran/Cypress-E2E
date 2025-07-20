@@ -15,39 +15,30 @@ pipeline {
 
     stage('Run Cypress Tests') {
       steps {
-        echo '🚀 Running Cypress tests...'
+        echo '🚀 Running Cypress tests with Allure...'
         bat 'npx cypress run'
       }
     }
 
-    stage('Verify JSON Reports') {
+    stage('Generate Allure Report') {
       steps {
-        echo '🔍 Verifying that JSON reports exist...'
-        bat 'dir cypress\\reports\\mochawesome\\json'
-      }
-    }
-
-    stage('Merge JSON Reports') {
-      steps {
-        echo '🔗 Merging JSON reports...'
+        echo '📝 Generating Allure report...'
         bat '''
-          if not exist cypress\\reports\\mochawesome mkdir cypress\\reports\\mochawesome
-          npx mochawesome-merge cypress\\reports\\mochawesome\\json\\*.json > cypress\\reports\\mochawesome\\mochawesome.json
+          if not exist allure-report mkdir allure-report
+          npx allure generate cypress\\reports\\allure-results --clean -o allure-report
         '''
       }
     }
 
-    stage('Generate Final HTML Report') {
+    stage('Publish Allure Report in Jenkins') {
       steps {
-        echo '📝 Generating HTML report...'
-        bat 'npx marge cypress\\reports\\mochawesome\\mochawesome.json --reportDir cypress\\reports\\mochawesome --reportFilename index.html'
-      }
-    }
-
-    stage('Archive HTML Report') {
-      steps {
-        echo '📁 Archiving HTML report...'
-        archiveArtifacts artifacts: 'cypress/reports/mochawesome/index.html', allowEmptyArchive: false
+        echo '📊 Publishing Allure report to Jenkins...'
+        allure([
+          includeProperties: false,
+          jdk: '',
+          results: [[path: 'cypress/reports/allure-results']],
+          reportBuildPolicy: 'ALWAYS'
+        ])
       }
     }
   }
