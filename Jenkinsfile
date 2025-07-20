@@ -1,48 +1,66 @@
 pipeline {
-    agent any
+  agent any
 
-    stages {
-        stage('Install Dependencies') {
-            steps {
-                bat 'npm install'
-            }
-        }
+  environment {
+    CYPRESS_baseUrl = "https://www.saucedemo.com/"
+  }
 
-        stage('Run Cypress Tests') {
-            steps {
-                bat 'npx cypress run'
-            }
-        }
+  stages {
 
-        stage('Merge Mochawesome JSON') {
-            steps {
-                bat 'if not exist cypress\\reports\\mochawesome mkdir cypress\\reports\\mochawesome'
-                bat 'npx mochawesome-merge cypress/reports/html/.jsons/*.json > cypress/reports/mochawesome/mochawesome.json'
-            }
-        }
-
-        stage('Generate HTML Report') {
-            steps {
-                bat 'npx marge cypress/reports/mochawesome/mochawesome.json --reportDir cypress/reports/mochawesome'
-            }
-        }
-
-        stage('Archive Reports') {
-            steps {
-                archiveArtifacts artifacts: 'cypress/reports/mochawesome/**', fingerprint: true
-            }
-        }
+    stage('Install Dependencies') {
+      steps {
+        echo "📦 Installing dependencies..."
+        bat 'npm ci'
+      }
     }
 
-    post {
-        always {
-            echo '✅ Pipeline always block ran.'
-        }
-        success {
-            echo '✅ Pipeline completed successfully.'
-        }
-        failure {
-            echo '❌ Pipeline failed. Please check logs.'
-        }
+    stage('Run Cypress Tests') {
+      steps {
+        echo "🚀 Running Cypress tests with Mochawesome Reporter..."
+        bat 'npx cypress run --reporter cypress-mochawesome-reporter'
+      }
     }
+
+    stage('Verify Reports') {
+      steps {
+        echo "🔍 Verifying that JSON reports exist..."
+        bat 'dir cypress\\reports\\html\\.jsons'
+      }
+    }
+
+    stage('Merge Reports') {
+      steps {
+        echo "🔗 Merging Mochawesome JSON files..."
+        bat 'if not exist cypress\\reports\\mochawesome mkdir cypress\\reports\\mochawesome'
+        bat 'npx mochawesome-merge cypress/reports/html/.jsons/*.json > cypress/reports/mochawesome/mochawesome.json'
+      }
+    }
+
+    stage('Generate HTML Report') {
+      steps {
+        echo "📝 Generating HTML report from merged JSON..."
+        bat 'npx marge cypress/reports/mochawesome/mochawesome.json --reportDir cypress/reports/mochawesome --inline'
+      }
+    }
+
+    stage('Archive Report') {
+      steps {
+        echo "📂 Archiving the HTML report..."
+        archiveArtifacts artifacts: 'cypress/reports/mochawesome/*.html', allowEmptyArchive: false
+      }
+    }
+
+  }
+
+  post {
+    always {
+      echo "✅ Pipeline completed (always block)."
+    }
+    success {
+      echo "🎉 Pipeline succeeded!"
+    }
+    failure {
+      echo "❌ Pipeline failed. Please check logs."
+    }
+  }
 }
