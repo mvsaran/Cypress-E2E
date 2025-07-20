@@ -1,55 +1,47 @@
 pipeline {
-  agent any
+    agent any
 
-  tools {
-    nodejs 'NodeJS_20'
-    allure 'allure'  // <- This must match your Jenkins Allure Commandline tool name!
-  }
-
-  stages {
-    stage('Install Dependencies') {
-      steps {
-        echo '📦 Installing dependencies...'
-        bat 'npm install'
-      }
+    tools {
+        nodejs 'node'      // ✅ Match your Jenkins NodeJS tool name exactly
+        allure 'allure'    // ✅ Match your Jenkins Allure Commandline tool name exactly
     }
 
-    stage('Run Cypress Tests') {
-      steps {
-        echo '🚀 Running Cypress tests with Allure...'
-        bat 'npx cypress run'
-      }
+    stages {
+
+        stage('Install Dependencies') {
+            steps {
+                echo '📦 Installing dependencies...'
+                bat 'npm ci'
+            }
+        }
+
+        stage('Run Cypress Tests') {
+            steps {
+                echo '🚀 Running Cypress tests with Allure...'
+                bat 'npx cypress run --env allure=true'
+            }
+        }
+
+        stage('Generate Allure Report') {
+            steps {
+                echo '📝 Generating Allure report...'
+                bat 'npx allure generate allure-results --clean -o allure-report'
+            }
+        }
+
+        stage('Publish Allure Report') {
+            steps {
+                echo '📊 Publishing Allure report to Jenkins...'
+                allure includeProperties: false,
+                       jdk: '',
+                       results: [[path: 'allure-results']]
+            }
+        }
     }
 
-    stage('Generate Allure Report') {
-      steps {
-        echo '📝 Generating Allure report...'
-        bat '''
-          if not exist allure-report mkdir allure-report
-          allure generate cypress\\reports\\allure-results -o allure-report --clean
-        '''
-      }
+    post {
+        always {
+            echo '✅ Pipeline completed.'
+        }
     }
-
-    stage('Publish Allure Report in Jenkins') {
-      steps {
-        echo '📊 Publishing Allure report to Jenkins...'
-        allure([
-          includeProperties: false,
-          jdk: '',
-          results: [[path: 'cypress/reports/allure-results']],
-          reportBuildPolicy: 'ALWAYS'
-        ])
-      }
-    }
-  }
-
-  post {
-    always {
-      echo '✅ Pipeline completed.'
-    }
-    failure {
-      echo '❌ Pipeline failed. Check logs!'
-    }
-  }
 }
