@@ -1,17 +1,12 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs "NodeJS_20"
+    environment {
+        // Example: set your environment variables here if needed
+        CYPRESS_BASE_URL = 'https://www.saucedemo.com'
     }
 
     stages {
-
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
 
         stage('Install Dependencies') {
             steps {
@@ -27,22 +22,35 @@ pipeline {
 
         stage('Merge Mochawesome JSON') {
             steps {
+                // Make sure output folder exists
                 bat 'mkdir cypress\\reports\\mochawesome'
-                bat 'move cypress\\reports\\html\\.jsons\\mochawesome.json cypress\\reports\\mochawesome\\'
-                bat 'npx mochawesome-merge cypress/reports/mochawesome/*.json > cypress/reports/mochawesome/mochawesome.json'
+                // Merge all .json files from .jsons folder to single mochawesome.json
+                bat 'npx mochawesome-merge cypress/reports/html/.jsons/*.json > cypress/reports/mochawesome/mochawesome.json'
             }
         }
 
         stage('Generate HTML Report') {
             steps {
-                bat 'npx marge cypress/reports/mochawesome/mochawesome.json -f mochawesome-report -o cypress/reports/mochawesome'
+                bat 'npx marge cypress/reports/mochawesome/mochawesome.json --reportDir cypress/reports/mochawesome'
             }
         }
 
         stage('Archive Reports') {
             steps {
-                archiveArtifacts artifacts: 'cypress/reports/mochawesome/*.html', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'cypress/reports/mochawesome/**', fingerprint: true
             }
+        }
+    }
+
+    post {
+        always {
+            junit '**/cypress/reports/mochawesome/*.xml'
+        }
+        success {
+            echo '✅ Pipeline completed successfully.'
+        }
+        failure {
+            echo '❌ Pipeline failed. Please check logs.'
         }
     }
 }
