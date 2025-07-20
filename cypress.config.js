@@ -5,8 +5,8 @@ module.exports = defineConfig({
   reporterOptions: {
     reportDir: "cypress/reports/mochawesome/json",
     overwrite: false,
-    html: false,
-    json: true
+    html: false,   // ✅ no HTML here!
+    json: true     // ✅ only JSON here!
   },
   e2e: {
     setupNodeEvents(on, config) {
