@@ -3,6 +3,7 @@ pipeline {
 
   tools {
     nodejs 'NodeJS_20'
+    allure 'Allure'  // <- This must match your Jenkins Allure Commandline tool name!
   }
 
   stages {
@@ -25,7 +26,7 @@ pipeline {
         echo '📝 Generating Allure report...'
         bat '''
           if not exist allure-report mkdir allure-report
-          npx allure generate cypress\\reports\\allure-results --clean -o allure-report
+          allure generate cypress\\reports\\allure-results -o allure-report --clean
         '''
       }
     }
