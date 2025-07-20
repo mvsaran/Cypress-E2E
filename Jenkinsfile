@@ -2,32 +2,32 @@ pipeline {
   agent any
 
   tools {
-    nodejs 'NodeJS_20' // use your configured NodeJS tool name
+    nodejs 'NodeJS_20' // your configured NodeJS tool name
   }
 
   stages {
 
     stage('Install Dependencies') {
       steps {
-        sh 'npm install'
+        bat 'npm install'
       }
     }
 
     stage('Run Cypress Tests') {
       steps {
-        sh 'npx cypress run'
+        bat 'npx cypress run'
       }
     }
 
     stage('Merge Mochawesome JSON') {
       steps {
-        sh 'npx mochawesome-merge cypress/reports/mochawesome/*.json > cypress/reports/mochawesome/mochawesome.json'
+        bat 'npx mochawesome-merge cypress/reports/mochawesome/*.json > cypress/reports/mochawesome/mochawesome.json'
       }
     }
 
     stage('Generate HTML Report') {
       steps {
-        sh 'npx marge cypress/reports/mochawesome/mochawesome.json -f report -o cypress/reports/mochawesome'
+        bat 'npx marge cypress/reports/mochawesome/mochawesome.json -f report -o cypress/reports/mochawesome'
       }
     }
 
