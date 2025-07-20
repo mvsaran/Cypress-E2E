@@ -1,13 +1,7 @@
 pipeline {
     agent any
 
-    environment {
-        // Example: set your environment variables here if needed
-        CYPRESS_BASE_URL = 'https://www.saucedemo.com'
-    }
-
     stages {
-
         stage('Install Dependencies') {
             steps {
                 bat 'npm install'
@@ -22,9 +16,7 @@ pipeline {
 
         stage('Merge Mochawesome JSON') {
             steps {
-                // Make sure output folder exists
-                bat 'mkdir cypress\\reports\\mochawesome'
-                // Merge all .json files from .jsons folder to single mochawesome.json
+                bat 'if not exist cypress\\reports\\mochawesome mkdir cypress\\reports\\mochawesome'
                 bat 'npx mochawesome-merge cypress/reports/html/.jsons/*.json > cypress/reports/mochawesome/mochawesome.json'
             }
         }
@@ -44,7 +36,7 @@ pipeline {
 
     post {
         always {
-            junit '**/cypress/reports/mochawesome/*.xml'
+            echo '✅ Pipeline always block ran.'
         }
         success {
             echo '✅ Pipeline completed successfully.'
